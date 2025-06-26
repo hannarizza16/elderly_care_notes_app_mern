@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import "../../styles/Global.css";
+import axios from "axios";
+import { checkPermissions } from "../../utils/permissions";
+import "../../styles/Appointments.css";
 
 const AppointmentsModal = ({
   date,
@@ -9,6 +11,7 @@ const AppointmentsModal = ({
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -18,6 +21,27 @@ const AppointmentsModal = ({
   });
 
   const modalRef = useRef();
+  
+  // Get permissions
+  const { canAdd, canEdit, canDelete, canView } = checkPermissions();
+
+  useEffect(() => {
+    // Fetch users when component mounts
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/contactusers', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+          },
+        });
+        setUsers(response.data);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   useEffect(() => {
     // Handler for clicks outside the modal
@@ -64,6 +88,7 @@ const AppointmentsModal = ({
   };
 
   const handleAddAppointment = () => {
+    if (!canAdd) return;
     const newAppointment = {
       id: Date.now(),
       ...formData,
@@ -74,12 +99,14 @@ const AppointmentsModal = ({
   };
 
   const handleEdit = (appointment) => {
+    if (!canEdit) return;
     setEditingId(appointment.id);
     setFormData({ ...appointment });
     setShowForm(true);
   };
 
   const handleSaveEdit = () => {
+    if (!canEdit) return;
     const updated = appointments.map((app) =>
       app.id === editingId ? { ...formData, id: editingId, date } : app
     );
@@ -88,36 +115,51 @@ const AppointmentsModal = ({
   };
 
   const handleDelete = (id) => {
+    if (!canDelete) return;
     const updated = appointments.filter((app) => app.id !== id);
     setAppointments(updated);
   };
 
   const appointmentsForDate = appointments.filter((app) => app.date === date);
 
+  if (!canView) {
+    return (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <p className="text-center text-[var(--text)]">
+            You don't have permission to view appointments.
+          </p>
+          <div className="flex justify-center mt-4">
+            <button className="nav-button" onClick={onClose}>Close</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 modal-overlay">
-      <div
-        ref={modalRef}
-        className="rounded-lg shadow-lg p-6 w-full max-w-3xl relative bg-white"
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-[var(--text)]">
+    <div className="modal-overlay">
+      <div ref={modalRef} className="modal-content">
+        <div className="modal-header">
+          <h2 className="modal-title">
             Appointments on {date}
           </h2>
-          {!showForm && (
-            <button onClick={() => setShowForm(true)}>+ Add</button>
+          {!showForm && canAdd && (
+            <button className="add-button" onClick={() => setShowForm(true)}>
+              + Add
+            </button>
           )}
         </div>
 
         {showForm ? (
-          <div className="space-y-2 border border-[var(--highlight)] p-4 rounded bg-white">
+          <form className="appointment-form" onSubmit={(e) => e.preventDefault()}>
             <input
               type="text"
               name="title"
               value={formData.title}
               onChange={handleChange}
               placeholder="Title"
-              className="w-full p-2 border rounded"
+              className="form-input"
               autoFocus
             />
             <input
@@ -126,7 +168,7 @@ const AppointmentsModal = ({
               value={formData.description}
               onChange={handleChange}
               placeholder="Description"
-              className="w-full p-2 border rounded"
+              className="form-input"
             />
             <input
               type="text"
@@ -134,67 +176,80 @@ const AppointmentsModal = ({
               value={formData.location}
               onChange={handleChange}
               placeholder="Location"
-              className="w-full p-2 border rounded"
+              className="form-input"
             />
             <input
               type="time"
               name="time"
               value={formData.time}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
+              className="form-input"
             />
             <select
               name="assignedTo"
               value={formData.assignedTo}
               onChange={handleChange}
-              placeholder="Assigned To"
-              className="w-full p-2 border rounded"
+              className="form-input"
             >
-              <option>Family Member</option>
-              <option>Caregiver</option>
+              <option value="">Select User</option>
+              {users.map((user) => (
+                <option key={user._id} value={user._id}>
+                  {user.fullname} ({user.role})
+                </option>
+              ))}
             </select>
-            <div className="flex gap-2 justify-end mt-4">
+
+            <div className="flex gap-2">
               <button
+                className="add-button flex-1"
                 onClick={editingId ? handleSaveEdit : handleAddAppointment}
               >
-                Save
+                {editingId ? "Save Changes" : "Add Appointment"}
               </button>
-              <button onClick={resetForm}>Cancel</button>
-            </div>
-          </div>
-        ) : appointmentsForDate.length === 0 ? (
-          <p className="text-center text-[var(--text)] italic">
-            You have no appointments today. Take a break!
-          </p>
-        ) : (
-          <ul className="space-y-4 max-h-80 overflow-y-auto">
-            {appointmentsForDate.map((app) => (
-              <li
-                key={app.id}
-                className="border border-[var(--accent)] bg-[var(--light)] rounded p-4"
+              <button
+                className="nav-button flex-1"
+                onClick={resetForm}
               >
-                <p>
-                  <strong>Title:</strong> {app.title}
-                </p>
-                <p>
-                  <strong>Description:</strong> {app.description}
-                </p>
-                <p>
-                  <strong>Location:</strong> {app.location}
-                </p>
-                <p>
-                  <strong>Time:</strong> {app.time}
-                </p>
-                <p>
-                  <strong>Assigned To:</strong> {app.assignedTo}
-                </p>
-                <div className="flex gap-2 justify-end mt-2">
-                  <button onClick={() => handleEdit(app)}>Edit</button>
-                  <button onClick={() => handleDelete(app.id)}>Delete</button>
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="appointments-list-modal">
+            {appointmentsForDate.length === 0 ? (
+              <p className="text-center text-gray-500">No appointments scheduled.</p>
+            ) : (
+              appointmentsForDate.map((appointment) => (
+                <div key={appointment.id} className="appointment-card">
+                  <div className="appointment-info">
+                    <h3 className="font-semibold">{appointment.title}</h3>
+                    <p className="text-sm">{appointment.description}</p>
+                    <p className="text-sm">
+                      {appointment.time} at {appointment.location}
+                    </p>
+                  </div>
+                  <div className="appointment-actions">
+                    {canEdit && (
+                      <button
+                        className="edit-button"
+                        onClick={() => handleEdit(appointment)}
+                      >
+                        Edit
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        className="delete-button"
+                        onClick={() => handleDelete(appointment.id)}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </li>
-            ))}
-          </ul>
+              ))
+            )}
+          </div>
         )}
       </div>
     </div>
