@@ -135,3 +135,5 @@ export function SidebarItem({ to, text, icon, submenu = false, children }) {
     </NavLink>
   )
 }
+
+
