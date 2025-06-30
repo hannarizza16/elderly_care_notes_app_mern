@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useContext, useState } from "react";
 import { NotesContext } from "../context/NotesContext";
+import { AppointmentContext } from "../context/AppointmentsContext";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart,
@@ -14,9 +15,10 @@ import {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { state, dispatch, fetchAllNotes, fetchUserNotes, capitalizeSentence } =
-    useContext(NotesContext);
-  const { notes } = state;
+  const { state: noteState, fetchAllNotes, fetchUserNotes, capitalizeSentence } = useContext(NotesContext);
+  const { state: appointmentState, fetchAllAppointments } =  useContext(AppointmentContext)
+  const { appointments } = appointmentState;
+  const { notes } = noteState;
   const [symptoms, setSymptoms] = useState([]);
   const [medications, setMedications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,8 @@ export default function Home() {
         await Promise.all([
           fetchAllNotes(),
           fetchSymptoms(),
-          fetchMedications()
+          fetchMedications(),
+          fetchAllAppointments()
         ]);
 
         setLoading(false);
@@ -85,7 +88,7 @@ export default function Home() {
     };
 
     fetchData();
-  }, [fetchAllNotes]);
+  }, [fetchAllNotes, fetchAllAppointments]);
 
   if (loading) {
     return <div className="text-center p-4">Loading dashboard data...</div>;
@@ -132,26 +135,19 @@ export default function Home() {
           className="border-2 border-black rounded-xl p-4 cursor-pointer hover:bg-gray-50 transition-colors"
           onClick={() => navigate('/appointments')}
         >
-          <h2 className="text-orange-400 text-lg font-bold mb-2">
-            Upcoming Appointment
-          </h2>
+          <h2 className="text-orange-400 text-lg font-bold mb-2">Upcoming Appointments</h2>
           <ul className="space-y-1">
-            <li className="flex justify-between">
-              <span>Heart Checkup</span>
-              <span>05/19/25</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Ear Checkup</span>
-              <span>05/19/25</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Laboratory</span>
-              <span>05/15/25</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Chest X-ray</span>
-              <span>05/16/25</span>
-            </li>
+              {[...appointments]
+              .map((appointment) => (
+                <li key={appointment._id} className="flex justify-between">
+                  <span className="capitalize font-semibold">
+                  {appointment.title}
+                  </span>
+                  <span> {new Date(appointment.date).toLocaleDateString()}</span>
+                  <span> {appointment.time}</span>
+
+                </li>
+              ))}
           </ul>
         </div>
       </div>
@@ -180,7 +176,6 @@ export default function Home() {
                   )}
                 </div>
                 
-
                 <small>{new Date(note.date).toLocaleString()}</small>
               </div>
             ))}

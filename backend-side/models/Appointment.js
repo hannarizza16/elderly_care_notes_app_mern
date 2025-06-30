@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const appointmentSchema = new mongoose.Schema({
-  title: {
+  title: { // Title of the appointment
     type: String,
     required: true
   },
@@ -12,12 +12,12 @@ const appointmentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  date: {
-    type: Date,
+  date: { 
+    type: Date, // expected format: YYYY-MM-DD
     required: true
   },
   time: {
-    type: String,
+    type: String, // expected format: HH:mm (24-hour format)
     required: true
   },
   assignedTo: [{

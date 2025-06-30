@@ -3,13 +3,18 @@ import Appointment from '../models/Appointment.js';
 // Create a new appointment
 export const createAppointment = async (req, res) => {
   try {
-    const { title, description, location, date, time, assignedTo } = req.body;
+    const { title, description, location, date, time, assignedTo, createdBy, userModel } = req.body;
     const userId = req.user.id;
     const userRole = req.user.role;
+    // const { createdBy, userModel } = req.body;
 
     if (!userId || !userRole) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
+
+    // if (!createdBy || !userModel) {
+    //   return res.status(400).json({ message: 'Missing user identification info' });
+    // }
 
     const newAppointment = new Appointment({
       title,
@@ -18,13 +23,20 @@ export const createAppointment = async (req, res) => {
       date,
       time,
       assignedTo,
-      createdBy: userId,
+      createdBy,
+      userModel
     });
+
+    const error = newAppointment.validateSync();
+    if (error) {
+  console.error("Validation Error:", error);
+  return res.status(400).json({ success: false, message: 'Validation failed', error });
+}
 
     await newAppointment.save();
     res.status(201).json({ success: true, appointment: newAppointment });
   } catch (err) {
-    console.error(err);
+    console.error("Error saving appointment:", err); // <-- log the full error
     res.status(500).json({ success: false, message: 'Failed to create appointment' });
   }
 };
@@ -63,6 +75,17 @@ export const getAppointmentsByDate = async (req, res) => {
     res.status(500).json({ message: 'Error fetching appointments' });
   }
 };
+
+export const getAllAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find()
+      .populate('assignedTo', 'fullname email role')
+      .populate('createdBy', 'fullname email role');
+    res.json(appointments);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching appointments' });
+  }
+}
 
 // Update
 export const updateAppointment = async (req, res) => {
