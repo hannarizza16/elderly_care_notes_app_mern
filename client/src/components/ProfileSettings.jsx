@@ -19,9 +19,11 @@ export default function ProfileSettings() {
 });
 const [passwordMessage, setPasswordMessage] = useState("");
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
-const API_PROFILE_URL = import.meta.env.VITE_PROFILE_SETTINGS_URL || "http://localhost:8000/api/profilesettings/settings";
-const API_PROFILE_UPDATE_URL = import.meta.env.VITE_PROFILE_UPDATE_URL || "http://localhost:8000/api/profilesettings/updatesettings";
+
+const API_PROFILE_URL = import.meta.env.VITE_PROFILE_SETTINGS_URL || `${BACKEND_URL}/api/profilesettings/settings`;
+const API_PROFILE_UPDATE_URL = import.meta.env.VITE_PROFILE_UPDATE_URL || `${BACKEND_URL}/api/profilesettings/updatesettings`;
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -106,7 +108,7 @@ const API_PROFILE_UPDATE_URL = import.meta.env.VITE_PROFILE_UPDATE_URL || "http:
     if (!token) throw new Error("No token found, please login.");
 
     await axios.put(
-      "http://localhost:8000/api/profilesettings/changepassword",
+      "${BACKEND_URL}/profilesettings/changepassword",
       {
         currentPassword: passwords.currentPassword,
         newPassword: passwords.newPassword,

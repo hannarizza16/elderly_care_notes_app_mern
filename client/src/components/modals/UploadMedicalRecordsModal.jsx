@@ -8,6 +8,9 @@ export default function UploadMedicalRecordsModal({ onClose, onUpload, canAdd })
   const [file, setFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [category, setCategory] = useState("");
+  
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+
 
   const handleFileChange = (e) => {
     if (e.target.files[0]) {
@@ -35,7 +38,7 @@ export default function UploadMedicalRecordsModal({ onClose, onUpload, canAdd })
     formData.append("category", category);
 
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://localhost:8000/api/medicalrecords/upload");
+    xhr.open("POST", `${BACKEND_URL}/api/medicalrecords/upload`);
 
     // Add authorization header
     const token = localStorage.getItem("userToken");

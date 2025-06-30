@@ -4,11 +4,12 @@ export const AuthContext = createContext()
 
 export function AuthProvider({ children }){
     const [state, dispatch] = useReducer(authReducer, initialState) 
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
     useEffect(() => {
     const fetchApplications = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/mainusers/all-users')
+            const response = await axios.get(`${BACKEND_URL}/api/mainusers/all-users`)
             console.log("Fetched applications:", response.data); //Check this
             
         } catch (error) {

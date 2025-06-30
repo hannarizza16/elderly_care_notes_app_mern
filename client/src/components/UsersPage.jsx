@@ -17,10 +17,12 @@ const UserPage = () => {
 
   // Determine if current user can edit/add/delete users
   const canEditUsers = currentUserRole !== 'caregiver' && currentUserRole !== 'family';
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/contactusers', {
+      const res = await axios.get(`${BACKEND_URL}/api/contactusers`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('userToken')}`,
         },
@@ -33,7 +35,7 @@ const UserPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/api/contactusers/${id}`, {
+      await axios.delete(`${BACKEND_URL}/api/contactusers/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('userToken')}`,
         },
@@ -55,7 +57,7 @@ const UserPage = () => {
 
     try {
       await axios.put(
-        `http://localhost:8000/api/contactusers/${id}`,
+        `${BACKEND_URL}/api/contactusers/${id}`,
         {
           isContributor,
           isViewOnly: user?.isViewOnly ?? false,
@@ -87,7 +89,7 @@ const UserPage = () => {
 
     try {
       await axios.put(
-        `http://localhost:8000/api/contactusers/${id}`,
+        `${BACKEND_URL}/api/contactusers/${id}`,
         {
           isViewOnly,
           isContributor: user?.isContributor ?? false,
@@ -111,7 +113,7 @@ const UserPage = () => {
   const saveEdit = async (id) => {
     try {
       await axios.put(
-        `http://localhost:8000/api/contactusers/${id}`,
+        `${BACKEND_URL}/api/contactusers/${id}`,
         {
           fullname: editedName,
           email: editedEmail,

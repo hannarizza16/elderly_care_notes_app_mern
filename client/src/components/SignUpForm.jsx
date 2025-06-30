@@ -11,6 +11,8 @@ export default function SignUpForm({setIsLogin}) {
         confirmPassword: ''
     });
 
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -25,7 +27,7 @@ export default function SignUpForm({setIsLogin}) {
             return;
         }
         try {
-            const response = await axios.post('http://localhost:8000/api/mainusers/register', {
+            const response = await axios.post(`${BACKEND_URL}/api/mainusers/register`, {
                 fullname: formData.fullname,
                 email: formData.email,
                 password: formData.password

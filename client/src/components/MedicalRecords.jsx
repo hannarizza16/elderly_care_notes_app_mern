@@ -15,12 +15,13 @@ export default function MedicalRecords() {
   const [yearFilter, setYearFilter] = useState("");
   const [error, setError] = useState("");
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
   // Get permissions
   const { canAdd, canEdit, canDelete, canView } = checkPermissions();
 
   // Fetch records from the API when the component adds
   const fetchRecords = () => {
-    fetch("http://localhost:8000/api/medicalrecords/getAllRecords", {
+    fetch(`${BACKEND_URL}/api/medicalrecords/getAllRecords`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('userToken')}`,
       },
@@ -98,7 +99,7 @@ export default function MedicalRecords() {
 
       {error && <p className="text-red-600 mb-4">{error}</p>}
 
-      <div className="filters-section">
+      <div className="filters-section justify-center">
         <select
           className="filter-select"
           value={categoryFilter}
@@ -165,7 +166,7 @@ export default function MedicalRecords() {
               {record.fileUrl && (
                 <div className="mt-2">
                   <a
-                    href={`http://localhost:8000/api/medicalrecords/download/${record._id}`}
+                    href={`${BACKEND_URL}/api/medicalrecords/download/${record._id}`}
                     className="download-link"
                     onClick={(e) => e.stopPropagation()}
                   >

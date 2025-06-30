@@ -8,6 +8,8 @@ export default function AddMedicationModal({ onClose, onAdd }) {
   const [day, setDay] = useState('');
   const [date, setDate] = useState('');
   const { canAdd } = checkPermissions();
+  
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
   const handleSubmit = async () => {
     if (!canAdd) {
@@ -22,7 +24,7 @@ export default function AddMedicationModal({ onClose, onAdd }) {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/medications', {
+      const response = await fetch(`${BACKEND_URL}/api/medications`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

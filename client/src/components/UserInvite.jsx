@@ -7,6 +7,8 @@ const UserInvite = ({ isOpen, onClose }) => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+
   if (!isOpen) return null;
 
   const handleChange = e => {
@@ -21,7 +23,7 @@ const UserInvite = ({ isOpen, onClose }) => {
     try {
       const token = localStorage.getItem('userToken');
       const res = await axios.post(
-        'http://localhost:8000/api/contactusers/user-invite',
+        `${BACKEND_URL}/api/contactusers/user-invite`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -12,6 +12,8 @@ const AcceptInvite = ({ onLogin }) => {
   const [settingPassword, setSettingPassword] = useState(false);
   const navigate = useNavigate();
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token");
     if (!token) {
@@ -20,7 +22,7 @@ const AcceptInvite = ({ onLogin }) => {
     }
 
     axios
-      .get(`http://localhost:8000/api/contactusers/accept-invite?token=${token}`)
+      .get(`${BACKEND_URL}/api/contactusers/accept-invite?token=${token}`)
       .then((res) => {
         const { token, fullname, email, role, id } = res.data;
 
@@ -52,7 +54,7 @@ const AcceptInvite = ({ onLogin }) => {
     try {
       const token = localStorage.getItem("userToken");
       await axios.post(
-        `http://localhost:8000/api/contactusers/set-password`,
+        `${BACKEND_URL}/api/contactusers/set-password`,
         { password: password.trim() },
         {
           headers: {

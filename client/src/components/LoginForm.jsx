@@ -2,9 +2,11 @@ import { useState } from "react";
 import axios from "axios";
 
 export default function LoginForm({onLogin, setIsLogin}) {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('sample6@gmail.com');
+    const [password, setPassword] = useState('123');
     const [error, setError] = useState('');
+
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -13,7 +15,7 @@ export default function LoginForm({onLogin, setIsLogin}) {
         try {
             // First try admin login
             try {
-                const adminResponse = await axios.post('http://localhost:8000/api/mainusers/login', {
+                const adminResponse = await axios.post(`${BACKEND_URL}/api/mainusers/login`, {
                     email,
                     password,
                 });
@@ -36,7 +38,7 @@ export default function LoginForm({onLogin, setIsLogin}) {
             } catch (adminError) {
                 // If admin login fails, try family/caregiver login
                 if (adminError.response?.status === 400) {
-                    const contactResponse = await axios.post('http://localhost:8000/api/contactusers/login', {
+                    const contactResponse = await axios.post(`${BACKEND_URL}/api/contactusers/login`, {
                         email,
                         password,
                     });

@@ -24,12 +24,14 @@ const AppointmentsModal = ({
   
   // Get permissions
   const { canAdd, canEdit, canDelete, canView } = checkPermissions();
+  
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
   useEffect(() => {
     // Fetch users when component mounts
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/contactusers', {
+        const response = await axios.get(`${BACKEND_URL}/api/contactusers`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('userToken')}`,
           },

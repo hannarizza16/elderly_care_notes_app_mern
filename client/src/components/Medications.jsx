@@ -8,19 +8,21 @@ export default function MedicationPage() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const { canAdd, canEdit } = checkPermissions();
-
+  
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+  
   const fetchMedications = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('userToken');
       if (!token) throw new Error('User not logged in');
-
-      const res = await fetch('http://localhost:8000/api/medications', {
+      
+      const res = await fetch(`${BACKEND_URL}/api/medications`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-
+      
       if (!res.ok) throw new Error('Failed to fetch medications');
-
+      
       const data = await res.json();
       setMeds(data);
     } catch (error) {
@@ -65,7 +67,7 @@ export default function MedicationPage() {
         )
       );
 
-      const res = await fetch(`http://localhost:8000/api/toggle/${medId}`, {
+      const res = await fetch(`${BACKEND_URL}/api/toggle/${medId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

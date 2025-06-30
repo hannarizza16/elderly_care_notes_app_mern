@@ -24,6 +24,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+
   useEffect(() => {
     let retryCount = 0;
     const maxRetries = 3;
@@ -62,7 +64,7 @@ export default function Home() {
 
     const fetchSymptoms = async () => {
       const token = localStorage.getItem("userToken");
-      const res = await axios.get("http://localhost:8000/api/symptoms", {
+      const res = await axios.get(`${BACKEND_URL}/api/symptoms`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -81,7 +83,7 @@ export default function Home() {
 
     const fetchMedications = async () => {
       const token = localStorage.getItem("userToken");
-      const res = await axios.get("http://localhost:8000/api/medications", {
+      const res = await axios.get(`${BACKEND_URL}/api/medications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMedications(res.data);

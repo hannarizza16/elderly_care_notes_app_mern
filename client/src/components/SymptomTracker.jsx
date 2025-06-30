@@ -17,6 +17,8 @@ export default function SymptomTracker() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSymptomName, setSelectedSymptomName] = useState('');
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+  
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user.role === 'admin';
 

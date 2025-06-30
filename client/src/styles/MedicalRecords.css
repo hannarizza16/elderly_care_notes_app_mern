@@ -16,9 +16,9 @@
   border-radius: 0.5rem;
   padding: 1rem;
   margin-bottom: 1.5rem;
-  background-color: white;
-  border-color: var(--light);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  /* background-color: white; */
+  /* border-color: var(--light); */
+  /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); */
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
