@@ -1,53 +1,8 @@
-// import React, { useState } from "react";
-// import FileUploadForm from "./FileUploadForm.jsx"; 
-// import MedicalRecordsList from "./MedicalRecordsList.jsx";
-
-
-// export default function MedicalRecords() {
-//   const [showForm, setShowForm] = useState(false);
-
-//   const handleAddClick = () => {
-//     setShowForm(true);
-//   };
-
-//   return (
-//     <>
-//       <div className="flex flex-col gap-4">
-//         {/* Button aligned to the right */}
-//         <div className="flex justify-end">
-//           <button
-//             type="button"
-//             onClick={handleAddClick}
-//             className="grid grid-flow-col justify-items-end text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
-//           >
-//             Add
-//           </button>
-//         </div>
-
-//         {/* Title */}
-//         <div>MEDICAL RECORDS</div>
-
-//         {/* Content box */}
-//         <div className="border w-full h-screen border-black p-4 overflow-auto">
-//           {showForm ? (
-//             <FileUploadForm />
-//           ) : (
-//             <>
-//             <MedicalRecordsList />
-//             </>
-//           )}
-//         </div>
-//       </div>
-//     </>
-//   );
-// }
-
-
-
 import React, { useState, useEffect } from "react";
-import UploadMedicalRecordsModal from "../components/modals/UploadMedicalRecordsModal";
-import MedicalRecordsModal from "../components/modals/MedicalRecordsModal";
-import "../styles/Global.css";
+import { checkPermissions } from "../utils/permissions";
+import UploadMedicalRecordsModal from "./modals/UploadMedicalRecordsModal";
+import MedicalRecordsModal from "./modals/MedicalRecordsModal";
+import "../styles/MedicalRecords.css";
 
 export default function MedicalRecords() {
   const [records, setRecords] = useState([]);
@@ -58,16 +13,27 @@ export default function MedicalRecords() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
+  const [error, setError] = useState("");
+
+  // Get permissions
+  const { canAdd, canEdit, canDelete, canView } = checkPermissions();
 
   // Fetch records from the API when the component adds
   const fetchRecords = () => {
-    fetch("http://localhost:8000/api/medicalrecords/getAllRecords")
+    fetch("http://localhost:8000/api/medicalrecords/getAllRecords", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         setRecords(data);
         setFilteredRecords(data);
       })
-      .catch((err) => console.error("Fetch error:", err));
+      .catch((err) => {
+        console.error("Fetch error:", err);
+        setError("Failed to fetch medical records");
+      });
   };
 
   useEffect(() => {
@@ -91,6 +57,10 @@ export default function MedicalRecords() {
   }, [categoryFilter, monthFilter, yearFilter, records]);
 
   const handleRecordClick = (record) => {
+    if (!canView) {
+      setError("You don't have permission to view record details");
+      return;
+    }
     setSelectedRecord(record);
     setShowDetailsModal(true);
   };
@@ -113,17 +83,24 @@ export default function MedicalRecords() {
     "Audiology & Vision", "Oncology Reports", "Psychiatric Evaluations"
   ];
 
-  return (
-    <div className="p-4" style={{ backgroundColor: 'var(--light)' }}>
-      {/* Title */}
-      <h1 className="text-3xl font-bold mb-6 mr-70 ml-70" style={{ color: 'var(--primary)' }}>Medical Records</h1>
+  if (!canView) {
+    return (
+      <div className="p-4">
+        <h1 className="text-3xl font-bold mb-6 mr-70 ml-70" style={{ color: 'var(--primary)' }}>Medical Records</h1>
+        <p className="text-red-600">You don't have permission to view medical records.</p>
+      </div>
+    );
+  }
 
-      {/* Filter and Upload */}
-      <div 
-        className="border rounded-lg p-4 mb-6 bg-white shadow-md flex flex-wrap gap-4 items-center" 
-        style={{ borderColor: 'var(--light)' }}>
+  return (
+    <div className="medical-records-page">
+      <h1 className="medical-records-title">Medical Records</h1>
+
+      {error && <p className="text-red-600 mb-4">{error}</p>}
+
+      <div className="filters-section">
         <select
-          className="border rounded p-2"
+          className="filter-select"
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
@@ -134,7 +111,7 @@ export default function MedicalRecords() {
         </select>
 
         <select
-          className="border rounded p-2"
+          className="filter-select"
           value={monthFilter}
           onChange={(e) => setMonthFilter(e.target.value)}
         >
@@ -147,7 +124,7 @@ export default function MedicalRecords() {
         </select>
 
         <select
-          className="border rounded p-2"
+          className="filter-select"
           value={yearFilter}
           onChange={(e) => setYearFilter(e.target.value)}
         >
@@ -157,43 +134,49 @@ export default function MedicalRecords() {
           ))}
         </select>
       </div>
-
       
+      {canAdd && (
+        <div className="upload-button-container">
+          <button
+            onClick={() => setShowUploadModal(true)}
+            className="upload-button"
+          >
+            Upload
+          </button>
+        </div>
+      )}
 
-    <div>
-      <div className="flex justify-end mb-2">
-        <button
-          onClick={() => setShowUploadModal(true)}
-          className="ml-auto bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded">
-          Upload
-        </button>
-      </div>
-       
-      {/* Records List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="records-grid">
         {filteredRecords.length === 0 ? (
-          <p className="text-gray-500">No medical records found.</p>
+          <p className="no-records">No medical records found.</p>
         ) : (
           filteredRecords.map((record) => (
             <div
               key={record._id}
               onClick={() => handleRecordClick(record)}
-              className="cursor-pointer border p-4 rounded-lg shadow hover:bg-blue-50 transition bg-white"
-              style={{
-                backgroundColor: "var(--medium)",
-                border: "1px solid var(--light)",
-                color: "white",
-              }}
+              className="record-card"
             >
-              <p className="font-medium text-lg">{record.description}</p>
-              <p className="text-sm text-gray-600">Doctor: {record.doctorName}</p>
-              <p className="text-sm text-gray-600">Category: {record.category}</p>
-              <p className="text-sm text-gray-600">Uploaded: {new Date(record.uploadAt).toLocaleString()}</p>
+              <p className="record-title">{record.description}</p>
+              <p className="record-info">Doctor: {record.doctorName}</p>
+              <p className="record-info">Category: {record.category}</p>
+              <p className="record-info">
+                Uploaded: {new Date(record.uploadAt).toLocaleString()}
+              </p>
+              {record.fileUrl && (
+                <div className="mt-2">
+                  <a
+                    href={`http://localhost:8000/api/medicalrecords/download/${record._id}`}
+                    className="download-link"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Download
+                  </a>
+                </div>
+              )}
             </div>
           ))
         )}
       </div>
-</div>
 
       {/* Upload Modal */}
       {showUploadModal && (
@@ -203,6 +186,7 @@ export default function MedicalRecords() {
             fetchRecords();
             setShowUploadModal(false);
           }}
+          canAdd={canAdd}
         />
       )}
 
@@ -213,6 +197,8 @@ export default function MedicalRecords() {
           onClose={() => setShowDetailsModal(false)}
           onUpdate={handleRecordUpdate}
           onDelete={handleRecordDelete}
+          canEdit={canEdit}
+          canDelete={canDelete}
         />
       )}
     </div>

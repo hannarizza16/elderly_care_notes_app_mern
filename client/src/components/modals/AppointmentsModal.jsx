@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { checkPermissions } from "../../utils/permissions";
-import "../../styles/Appointments.css";
+import "../../styles/Global.css";
 
 const AppointmentsModal = ({
   date,
@@ -124,13 +124,13 @@ const AppointmentsModal = ({
 
   if (!canView) {
     return (
-      <div className="modal-overlay">
-        <div className="modal-content">
+      <div className="fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+        <div className="rounded-lg shadow-lg p-6 w-full max-w-3xl relative bg-white">
           <p className="text-center text-[var(--text)]">
             You don't have permission to view appointments.
           </p>
           <div className="flex justify-center mt-4">
-            <button className="nav-button" onClick={onClose}>Close</button>
+            <button onClick={onClose}>Close</button>
           </div>
         </div>
       </div>
@@ -138,28 +138,29 @@ const AppointmentsModal = ({
   }
 
   return (
-    <div className="modal-overlay">
-      <div ref={modalRef} className="modal-content">
-        <div className="modal-header">
-          <h2 className="modal-title">
+    <div className="fixed inset-0 flex items-center justify-center z-50 modal-overlay">
+      <div
+        ref={modalRef}
+        className="rounded-lg shadow-lg p-6 w-full max-w-3xl relative bg-white"
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-[var(--text)]">
             Appointments on {date}
           </h2>
           {!showForm && canAdd && (
-            <button className="add-button" onClick={() => setShowForm(true)}>
-              + Add
-            </button>
+            <button onClick={() => setShowForm(true)}>+ Add</button>
           )}
         </div>
 
         {showForm ? (
-          <form className="appointment-form" onSubmit={(e) => e.preventDefault()}>
+          <div className="space-y-2 border border-[var(--highlight)] p-4 rounded bg-white">
             <input
               type="text"
               name="title"
               value={formData.title}
               onChange={handleChange}
               placeholder="Title"
-              className="form-input"
+              className="w-full p-2 border rounded"
               autoFocus
             />
             <input
@@ -168,7 +169,7 @@ const AppointmentsModal = ({
               value={formData.description}
               onChange={handleChange}
               placeholder="Description"
-              className="form-input"
+              className="w-full p-2 border rounded"
             />
             <input
               type="text"
@@ -176,20 +177,20 @@ const AppointmentsModal = ({
               value={formData.location}
               onChange={handleChange}
               placeholder="Location"
-              className="form-input"
+              className="w-full p-2 border rounded"
             />
             <input
               type="time"
               name="time"
               value={formData.time}
               onChange={handleChange}
-              className="form-input"
+              className="w-full p-2 border rounded"
             />
             <select
               name="assignedTo"
               value={formData.assignedTo}
               onChange={handleChange}
-              className="form-input"
+              className="w-full p-2 border rounded"
             >
               <option value="">Select User</option>
               {users.map((user) => (
@@ -198,58 +199,53 @@ const AppointmentsModal = ({
                 </option>
               ))}
             </select>
-
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-end mt-4">
               <button
-                className="add-button flex-1"
                 onClick={editingId ? handleSaveEdit : handleAddAppointment}
+                disabled={!canAdd && !canEdit}
               >
-                {editingId ? "Save Changes" : "Add Appointment"}
+                Save
               </button>
-              <button
-                className="nav-button flex-1"
-                onClick={resetForm}
-              >
-                Cancel
-              </button>
+              <button onClick={resetForm}>Cancel</button>
             </div>
-          </form>
-        ) : (
-          <div className="appointments-list-modal">
-            {appointmentsForDate.length === 0 ? (
-              <p className="text-center text-gray-500">No appointments scheduled.</p>
-            ) : (
-              appointmentsForDate.map((appointment) => (
-                <div key={appointment.id} className="appointment-card">
-                  <div className="appointment-info">
-                    <h3 className="font-semibold">{appointment.title}</h3>
-                    <p className="text-sm">{appointment.description}</p>
-                    <p className="text-sm">
-                      {appointment.time} at {appointment.location}
-                    </p>
-                  </div>
-                  <div className="appointment-actions">
-                    {canEdit && (
-                      <button
-                        className="edit-button"
-                        onClick={() => handleEdit(appointment)}
-                      >
-                        Edit
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button
-                        className="delete-button"
-                        onClick={() => handleDelete(appointment.id)}
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
           </div>
+        ) : appointmentsForDate.length === 0 ? (
+          <p className="text-center text-[var(--text)] italic">
+            You have no appointments today. Take a break!
+          </p>
+        ) : (
+          <ul className="space-y-4 max-h-80 overflow-y-auto">
+            {appointmentsForDate.map((app) => (
+              <li
+                key={app.id}
+                className="border border-[var(--accent)] bg-[var(--light)] rounded p-4"
+              >
+                <p>
+                  <strong>Title:</strong> {app.title}
+                </p>
+                <p>
+                  <strong>Description:</strong> {app.description}
+                </p>
+                <p>
+                  <strong>Location:</strong> {app.location}
+                </p>
+                <p>
+                  <strong>Time:</strong> {app.time}
+                </p>
+                <p>
+                  <strong>Assigned To:</strong> {
+                    users.find(user => user._id === app.assignedTo)?.fullname || 'Unknown User'
+                  } ({users.find(user => user._id === app.assignedTo)?.role || 'Unknown Role'})
+                </p>
+                {(canEdit || canDelete) && (
+                  <div className="flex gap-2 justify-end mt-2">
+                    {canEdit && <button onClick={() => handleEdit(app)}>Edit</button>}
+                    {canDelete && <button onClick={() => handleDelete(app.id)}>Delete</button>}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>

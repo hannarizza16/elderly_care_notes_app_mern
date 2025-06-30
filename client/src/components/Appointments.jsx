@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import '../styles/Global.css';
-import AppointmentModal from '../components/modals/AppointmentsModal';
+import '../styles/Appointments.css';
+import AppointmentModal from './modals/AppointmentsModal';
 
 // Setup month and day names
 const monthNames = [
@@ -55,73 +55,55 @@ const AppointmentPage = () => {
   };
 
   return (
-    <div className="p-6 flex flex-col items-center min-h-screen" style={{ backgroundColor: 'var(--light)' }}>
-      <h1 className="text-3xl font-bold mb-6 mr-70 ml-70" style={{ color: 'var(--primary)' }}>Appointments</h1>
+    <div className="appointments-container">
+      <h1 className="appointments-title">Appointments</h1>
 
-      <div
-        className="w-full max-w-7xl border-2 rounded-xl p-6"
-        style={{ borderColor: 'var(--accent)', backgroundColor: 'white' }}
-      >
+      <div className="calendar-container">
         {/* Month & Navigation */}
-        <div className="flex justify-between items-center mb-4">
-          <button onClick={handlePrevMonth}>Prev</button>
-
-          <h2 className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>
+        <div className="calendar-nav">
+          <button className="nav-button" onClick={handlePrevMonth}>
+            Prev
+          </button>
+          <h2 className="current-month">
             {monthNames[month]} {year}
           </h2>
-
-          <button onClick={handleNextMonth}>Next</button>
+          <button className="nav-button" onClick={handleNextMonth}>
+            Next
+          </button>
         </div>
 
         {/* Days of Week Header */}
-        <div
-          className="grid grid-cols-7 gap-2 mb-2 text-center font-semibold"
-          style={{ color: 'var(--primary)' }}
-        >
+        <div className="weekdays-header">
           {daysOfWeek.map(day => (
             <div key={day}>{day}</div>
           ))}
         </div>
 
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-2">
+        <div className="calendar-grid">
           {daysArray.map((day, index) => {
             if (day === null) {
               return (
                 <div
                   key={index}
-                  className="p-4 border rounded calendar-day"
-                  style={{ borderColor: 'var(--accent)' }}
-                  onClick={() => handleDateClick(day)}
-                >
-
-                </div>
+                  className="calendar-day calendar-day-empty"
+                />
               );
             }
 
-            // Format the date string for appointments e.g. "2025-10-01"
             const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
             const dayAppointments = getAppointmentsForDate(dateStr);
 
             return (
               <div
                 key={index}
-                className="p-4 border rounded cursor-pointer transition "
-                style={{ borderColor: 'var(--accent)', color: 'var(--primary)', backgroundColor: 'white' }}
+                className="calendar-day calendar-day-active"
                 onClick={() => handleDateClick(day)}
-                onMouseEnter={e => {
-                  e.currentTarget.style.backgroundColor = 'var(--medium)';
-                  e.currentTarget.style.color = 'var(--secondary)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.backgroundColor = 'white';
-                  e.currentTarget.style.color = 'var(--primary)';
-                }}
               >
-                <div className="font-semibold">{day}</div>
-                <ul className="text-sm mt-1 max-h-20 overflow-y-auto">
+                <div className="day-number">{day}</div>
+                <ul className="appointments-list">
                   {dayAppointments.map(app => (
-                    <li key={app.id} className="truncate" title={app.title}>
+                    <li key={app.id} className="appointment-item" title={app.title}>
                       {app.title}
                     </li>
                   ))}
